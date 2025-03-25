@@ -2,29 +2,50 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock } from 'lucide-react';
-import { movies } from '../data';
 import { Movie } from '../types';
 import MovieGrid from '../components/MovieGrid';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { useMovies } from '@/hooks/useMovies';
+import { toast } from 'sonner';
 
 const Index = () => {
   const [featuredMovie, setFeaturedMovie] = useState<Movie | null>(null);
-  const [nowShowing, setNowShowing] = useState<Movie[]>([]);
-  const [upcoming, setUpcoming] = useState<Movie[]>([]);
-
+  
+  // Fetch movies from Supabase
+  const { data: nowShowingMovies, isLoading: loadingNowShowing, error: nowShowingError } = useMovies('now-showing');
+  const { data: upcomingMovies, isLoading: loadingUpcoming, error: upcomingError } = useMovies('upcoming');
+  
   useEffect(() => {
-    // Filter movies by status
-    const nowShowingMovies = movies.filter(movie => movie.status === 'now-showing');
-    const upcomingMovies = movies.filter(movie => movie.status === 'upcoming');
-    
-    // Set featured movie (first now showing movie)
-    setFeaturedMovie(nowShowingMovies[0] || null);
-    
-    // Set movies by category
-    setNowShowing(nowShowingMovies);
-    setUpcoming(upcomingMovies);
-  }, []);
+    if (nowShowingMovies && nowShowingMovies.length > 0) {
+      // Set the first now showing movie as featured
+      setFeaturedMovie(nowShowingMovies[0]);
+    }
+  }, [nowShowingMovies]);
+  
+  // Show error messages
+  useEffect(() => {
+    if (nowShowingError) {
+      toast.error('Failed to load now showing movies');
+    }
+    if (upcomingError) {
+      toast.error('Failed to load upcoming movies');
+    }
+  }, [nowShowingError, upcomingError]);
+
+  const isLoading = loadingNowShowing || loadingUpcoming;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="animate-spin h-8 w-8 border-4 border-cinema-accent border-t-transparent rounded-full"></div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -93,8 +114,8 @@ const Index = () => {
         
         {/* Movies sections */}
         <div className="container mx-auto px-6">
-          <MovieGrid title="Now Showing" movies={nowShowing} />
-          <MovieGrid title="Coming Soon" movies={upcoming} />
+          <MovieGrid title="Now Showing" movies={nowShowingMovies || []} />
+          <MovieGrid title="Coming Soon" movies={upcomingMovies || []} />
         </div>
       </main>
       

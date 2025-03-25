@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      movies: {
+        Row: {
+          actors: string[]
+          created_at: string
+          description: string
+          director: string
+          duration: string
+          genre: string[]
+          id: string
+          poster: string
+          release_date: string
+          status: string
+          title: string
+        }
+        Insert: {
+          actors: string[]
+          created_at?: string
+          description: string
+          director: string
+          duration: string
+          genre: string[]
+          id?: string
+          poster: string
+          release_date: string
+          status: string
+          title: string
+        }
+        Update: {
+          actors?: string[]
+          created_at?: string
+          description?: string
+          director?: string
+          duration?: string
+          genre?: string[]
+          id?: string
+          poster?: string
+          release_date?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

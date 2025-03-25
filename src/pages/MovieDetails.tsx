@@ -2,40 +2,41 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, Calendar, Film, User } from 'lucide-react';
-import { movies, theatres, showtimes } from '../data';
-import { Movie, Showtime, Seat } from '../types';
+import { showtimes, theatres } from '../data';
+import { Showtime, Seat } from '../types';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ShowtimeSelector from '../components/ShowtimeSelector';
 import SeatMap from '../components/SeatMap';
 import { toast } from "sonner";
 import { useAuth } from '@/contexts/AuthContext';
+import { useMovie } from '@/hooks/useMovies';
 
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  const [movie, setMovie] = useState<Movie | null>(null);
+  const { data: movie, isLoading, error } = useMovie(id);
   const [movieShowtimes, setMovieShowtimes] = useState<Showtime[]>([]);
   const [selectedShowtime, setSelectedShowtime] = useState<Showtime | null>(null);
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [step, setStep] = useState<'showtime' | 'seats' | 'summary'>('showtime');
   
   useEffect(() => {
-    // Find movie by id
-    const foundMovie = movies.find(m => m.id === id);
-    if (foundMovie) {
-      setMovie(foundMovie);
-      
+    if (movie) {
       // Filter showtimes for this movie
-      const movieShowtimes = showtimes.filter(st => st.movieId === foundMovie.id);
+      const movieShowtimes = showtimes.filter(st => st.movieId === movie.id);
       setMovieShowtimes(movieShowtimes);
-    } else {
-      // Redirect to not found page if movie doesn't exist
+    }
+  }, [movie]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error("Failed to load movie details");
       navigate('/not-found');
     }
-  }, [id, navigate]);
+  }, [error, navigate]);
   
   const handleShowtimeSelect = (showtime: Showtime) => {
     // Check if user is logged in before allowing seat selection
@@ -79,10 +80,27 @@ const MovieDetails = () => {
     setStep('showtime');
   };
   
-  if (!movie) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin h-8 w-8 border-4 border-cinema-accent border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+  
+  if (!movie) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold mb-2">Movie not found</h2>
+          <p className="mb-4">The movie you're looking for doesn't exist or has been removed.</p>
+          <button 
+            onClick={() => navigate('/')}
+            className="px-4 py-2 bg-cinema-accent text-cinema-primary rounded"
+          >
+            Go Home
+          </button>
+        </div>
       </div>
     );
   }
