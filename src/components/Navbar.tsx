@@ -1,10 +1,12 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, Film } from 'lucide-react';
+import { Menu, X, Film, LogIn, LogOut, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <nav className="glassmorphism sticky top-0 z-50 px-6 py-4 w-full">
@@ -19,6 +21,30 @@ const Navbar = () => {
           <Link to="/" className="text-cinema-primary hover:text-cinema-accent transition-colors">Home</Link>
           <Link to="/movies" className="text-cinema-primary hover:text-cinema-accent transition-colors">Movies</Link>
           <Link to="/theatres" className="text-cinema-primary hover:text-cinema-accent transition-colors">Theatres</Link>
+          
+          {user ? (
+            <div className="flex items-center space-x-4">
+              <span className="text-cinema-primary flex items-center">
+                <User size={16} className="mr-1" />
+                {user.email?.split('@')[0]}
+              </span>
+              <button 
+                onClick={() => signOut()} 
+                className="flex items-center text-cinema-primary hover:text-cinema-accent transition-colors"
+              >
+                <LogOut size={16} className="mr-1" />
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <Link 
+              to="/auth" 
+              className="flex items-center text-cinema-primary hover:text-cinema-accent transition-colors"
+            >
+              <LogIn size={16} className="mr-1" />
+              Sign In
+            </Link>
+          )}
         </div>
 
         {/* Mobile Navigation Toggle */}
@@ -56,6 +82,34 @@ const Navbar = () => {
             >
               Theatres
             </Link>
+            
+            {user ? (
+              <>
+                <div className="text-cinema-primary py-2 flex items-center">
+                  <User size={16} className="mr-2" />
+                  {user.email?.split('@')[0]}
+                </div>
+                <button 
+                  onClick={() => {
+                    signOut();
+                    setIsMenuOpen(false);
+                  }}
+                  className="flex items-center text-cinema-primary hover:text-cinema-accent transition-colors py-2"
+                >
+                  <LogOut size={16} className="mr-2" />
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link 
+                to="/auth" 
+                className="flex items-center text-cinema-primary hover:text-cinema-accent transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <LogIn size={16} className="mr-2" />
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       )}

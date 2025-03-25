@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, Calendar, Film, User } from 'lucide-react';
@@ -8,10 +9,12 @@ import Footer from '../components/Footer';
 import ShowtimeSelector from '../components/ShowtimeSelector';
 import SeatMap from '../components/SeatMap';
 import { toast } from "sonner";
+import { useAuth } from '@/contexts/AuthContext';
 
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const [movie, setMovie] = useState<Movie | null>(null);
   const [movieShowtimes, setMovieShowtimes] = useState<Showtime[]>([]);
@@ -35,6 +38,13 @@ const MovieDetails = () => {
   }, [id, navigate]);
   
   const handleShowtimeSelect = (showtime: Showtime) => {
+    // Check if user is logged in before allowing seat selection
+    if (!user) {
+      toast.error("Please sign in to book tickets");
+      navigate('/auth');
+      return;
+    }
+    
     setSelectedShowtime(showtime);
     setSelectedSeats([]);
     setStep('seats');
