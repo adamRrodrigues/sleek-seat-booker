@@ -1,4 +1,3 @@
-
 export interface Movie {
   id: string;
   title: string;
@@ -9,34 +8,45 @@ export interface Movie {
   director: string;
   cast: string[];
   description: string;
-  status: 'now-showing' | 'upcoming';
+  status: "now-showing" | "upcoming";
 }
 
 export interface Theatre {
-  id: string;
+  id: number;
   name: string;
-  location: string;
-  screens: Screen[];
+  address: string;
+  city: string;
+  state: string;
+  zip_code: string;
 }
 
 export interface Screen {
-  id: string;
-  name: string;
-  seats: Seat[];
+  id: number;
+  theatre_id: number;
+  screen_number: number;
+  total_seats: number;
 }
 
 export interface Seat {
-  id: string;
-  row: string;
-  number: number;
-  status: 'available' | 'occupied' | 'selected';
+  id: number;
+  screen_id: number;
+  row_letter: string;
+  seat_number: number;
 }
 
 export interface Showtime {
-  id: string;
-  movieId: string;
-  theatreId: string;
-  screenId: string;
-  time: string; // format: "HH:MM"
+  id: number;
+  movie_id: string;
+  theatre_id: number;
+  screen_number: number;
+  showtime: string; // format: "HH:MM"
   date: string; // format: "YYYY-MM-DD"
+  price: number;
+}
+
+export interface Seat_Reservations {
+  id: number;
+  showtime_id: number;
+  seat_id: number;
+  booking_id: number;
 }

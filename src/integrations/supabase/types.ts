@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          booking_date: string | null
+          id: number
+          number_of_tickets: number
+          showtime_id: number | null
+          total_amount: number | null
+          user_id: string | null
+        }
+        Insert: {
+          booking_date?: string | null
+          id?: number
+          number_of_tickets: number
+          showtime_id?: number | null
+          total_amount?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          booking_date?: string | null
+          id?: number
+          number_of_tickets?: number
+          showtime_id?: number | null
+          total_amount?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_showtime_id_fkey"
+            columns: ["showtime_id"]
+            isOneToOne: false
+            referencedRelation: "showtimes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       movies: {
         Row: {
           actors: string[]
@@ -75,6 +117,176 @@ export type Database = {
           id?: string
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      screens: {
+        Row: {
+          id: number
+          screen_number: number
+          theatre_id: number | null
+          total_seats: number
+        }
+        Insert: {
+          id?: number
+          screen_number: number
+          theatre_id?: number | null
+          total_seats: number
+        }
+        Update: {
+          id?: number
+          screen_number?: number
+          theatre_id?: number | null
+          total_seats?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "screens_theatre_id_fkey"
+            columns: ["theatre_id"]
+            isOneToOne: false
+            referencedRelation: "theatre"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seat_reservations: {
+        Row: {
+          booking_id: number | null
+          id: number
+          seat_id: number | null
+          showtime_id: number | null
+        }
+        Insert: {
+          booking_id?: number | null
+          id?: number
+          seat_id?: number | null
+          showtime_id?: number | null
+        }
+        Update: {
+          booking_id?: number | null
+          id?: number
+          seat_id?: number | null
+          showtime_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seat_reservations_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seat_reservations_seat_id_fkey"
+            columns: ["seat_id"]
+            isOneToOne: false
+            referencedRelation: "seats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seat_reservations_showtime_id_fkey"
+            columns: ["showtime_id"]
+            isOneToOne: false
+            referencedRelation: "showtimes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seats: {
+        Row: {
+          id: number
+          row_letter: string
+          screen_id: number | null
+          seat_number: number
+        }
+        Insert: {
+          id?: number
+          row_letter: string
+          screen_id?: number | null
+          seat_number: number
+        }
+        Update: {
+          id?: number
+          row_letter?: string
+          screen_id?: number | null
+          seat_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seats_screen_id_fkey"
+            columns: ["screen_id"]
+            isOneToOne: false
+            referencedRelation: "screens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      showtimes: {
+        Row: {
+          cinema_id: number | null
+          id: number
+          movie_id: string | null
+          price: number
+          screen_number: number | null
+          showtime: string
+        }
+        Insert: {
+          cinema_id?: number | null
+          id?: number
+          movie_id?: string | null
+          price: number
+          screen_number?: number | null
+          showtime: string
+        }
+        Update: {
+          cinema_id?: number | null
+          id?: number
+          movie_id?: string | null
+          price?: number
+          screen_number?: number | null
+          showtime?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "showtimes_cinema_id_fkey"
+            columns: ["cinema_id"]
+            isOneToOne: false
+            referencedRelation: "theatre"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "showtimes_movie_id_fkey"
+            columns: ["movie_id"]
+            isOneToOne: false
+            referencedRelation: "movies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      theatre: {
+        Row: {
+          address: string | null
+          city: string | null
+          id: number
+          name: string
+          state: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          id?: number
+          name: string
+          state?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          id?: number
+          name?: string
+          state?: string | null
+          zip_code?: string | null
         }
         Relationships: []
       }
