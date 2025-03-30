@@ -30,27 +30,22 @@ const Navbar = () => {
           >
             Movies
           </Link>
-          <Link
+          {/* <Link
             to="/theatres"
             className="text-cinema-primary hover:text-cinema-accent transition-colors"
           >
             Theatres
-          </Link>
+          </Link> */}
 
           {user ? (
-            <div className="flex items-center space-x-4">
-              <span className="text-cinema-primary flex items-center">
-                <User size={16} className="mr-1" />
-                {user.user_metadata.username}
-              </span>
-              <button
-                onClick={() => signOut()}
-                className="flex items-center text-cinema-primary hover:text-cinema-accent transition-colors"
-              >
-                <LogOut size={16} className="mr-1" />
-                Sign Out
-              </button>
-            </div>
+            <Link to={"/profile"}>
+              <div className="flex items-center space-x-4">
+                <span className="text-cinema-primary flex items-center">
+                  <User size={16} className="mr-1" />
+                  {user.user_metadata.username}
+                </span>
+              </div>
+            </Link>
           ) : (
             <Link
               to="/auth"
