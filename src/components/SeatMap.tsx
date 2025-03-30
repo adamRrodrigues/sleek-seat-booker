@@ -18,12 +18,14 @@ interface SeatMapProps {
   screenId: number;
   selectedSeats: string[];
   onSeatSelect: (seatId: string) => void;
+  showtimeId: number; // Pass showtimeId to fetch booked seats
 }
 
-const SeatMap = ({ screenId, selectedSeats, onSeatSelect }: SeatMapProps) => {
+const SeatMap = ({ screenId, selectedSeats, onSeatSelect, showtimeId }: SeatMapProps) => {
   const [screen, setScreen] = useState<Screen | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bookedSeatIds, setBookedSeatIds] = useState<string[]>([]); // Store booked seat IDs
 
   useEffect(() => {
     const fetchScreenAndSeats = async () => {
@@ -63,11 +65,24 @@ const SeatMap = ({ screenId, selectedSeats, onSeatSelect }: SeatMapProps) => {
             id: String(seat.id), // Convert seat.id to string
             row: seat.row_letter, // Use row_letter directly
             number: seat.seat_number,
-            status: "available", //Initially all seats are available. this will be updated in future implementations
+            status: "available", //Initially all seats are available. this will be updated based on booked seats
           })),
         };
 
         setScreen(screenWithSeats);
+
+        // Fetch booked seats for the showtime
+        const { data: bookedSeatsData, error: bookedSeatsError } = await supabase
+          .from("seat_reservations")
+          .select("seat_id")
+          .eq("showtime_id", showtimeId);
+
+        if (bookedSeatsError) {
+          throw new Error(`Error fetching booked seats: ${bookedSeatsError.message}`);
+        }
+
+        setBookedSeatIds((bookedSeatsData || []).map(reservation => String(reservation.seat_id)));
+
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -76,7 +91,7 @@ const SeatMap = ({ screenId, selectedSeats, onSeatSelect }: SeatMapProps) => {
     };
 
     fetchScreenAndSeats();
-  }, [screenId]);
+  }, [screenId, showtimeId]); // Refetch when screenId or showtimeId changes
 
   if (loading) {
     return <p>Loading seat map...</p>;
@@ -139,20 +154,26 @@ const SeatMap = ({ screenId, selectedSeats, onSeatSelect }: SeatMapProps) => {
                   .sort((a, b) => a.number - b.number)
                   .map((seat, seatIndex) => {
                     const isSelected = selectedSeats.includes(seat.id);
+                    const isBooked = bookedSeatIds.includes(seat.id); // Check if seat is booked
+
                     return (
                       <div
                         key={seat.id}
                         className={cn("seat", {
                           "seat-available":
-                            seat.status === "available" && !isSelected,
+                            !isSelected && !isBooked, // Available if not selected and not booked
                           "seat-selected": isSelected,
-                          "seat-occupied": seat.status === "occupied",
+                          "seat-occupied": isBooked,    // Occupied if booked
                         })}
                         onClick={() => {
-                          onSeatSelect(seat.id);
+                          if (!isBooked) { // Disable click if seat is booked
+                            onSeatSelect(seat.id);
+                          }
                         }}
                         style={{
                           animationDelay: `${rowIndex * 50 + seatIndex * 10}ms`,
+                          pointerEvents: isBooked ? "none" : "auto", // Disable click if booked
+                          cursor: isBooked ? "not-allowed" : "pointer", // Change cursor if booked
                         }}
                       >
                         {seat.number}

@@ -8,14 +8,14 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
             <p className="text-cinema-primary/80 text-sm">
-              &copy; {new Date().getFullYear()} CineVerse. All rights reserved.
+              &copy; {new Date().getFullYear()} Cinema Hub. All rights reserved.
             </p>
           </div>
           
           <div className="flex items-center text-cinema-primary/80 text-sm">
             <span>Made with</span>
             <Heart size={14} className="mx-1 text-cinema-accent" />
-            <span>by CineVerse</span>
+            <span>by Cinema Hub</span>
           </div>
         </div>
       </div>

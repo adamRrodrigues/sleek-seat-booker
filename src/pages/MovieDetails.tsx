@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useMovie } from "@/hooks/useMovies";
 import { Database } from "../integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
+import { useBookTickets } from "@/hooks/useBookTickets";
 
 // Define the type for Seat from the SeatMap component
 
@@ -24,7 +25,13 @@ type Seat = {
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
+
+  const {
+    mutate: bookTickets,
+    isError: bookingIsError,
+    error: bookingError,
+  } = useBookTickets();
 
   const { data: movie, isLoading, error } = useMovie(id);
   const [selectedShowtime, setSelectedShowtime] = useState<
@@ -95,54 +102,40 @@ const MovieDetails = () => {
     setStep("summary");
   };
 
-  const handleConfirmBooking = async () => {
+  const handleConfirmBooking = () => {
+    // Session check is good, but the hook handles its own internal check too
     if (!user || !selectedShowtime) {
-      toast.error("Something went wrong, please try again.");
+      toast.error("User not logged in or showtime not selected.");
+      return;
+    }
+    if (selectedSeats.length === 0) {
+      toast.error("Please select at least one seat.");
       return;
     }
 
-    try {
-      // 1. Fetch seats by id's
-      const { data: seatsData, error: seatsError } = await supabase
-        .from("seats")
-        .select("*")
-        .in("id", selectedSeats.map(Number)); // Assuming seatId is a number in the database
-
-      if (seatsError) {
-        throw new Error(`Error fetching seats: ${seatsError.message}`);
-      }
-
-      if (!seatsData) {
-        throw new Error("No seats found");
-      }
-
-      // 2. Map the seats from data
-      const seatIds = seatsData.map((seats) => seats.id);
-
-      // 3. Book seats using the user's id
-      const { data, error } = await supabase.functions.invoke("book-seats", {
-        body: {
-          showtimeId: selectedShowtime.id,
-          seatIds: seatIds,
-          userId: user.id,
+    bookTickets(
+      {
+        showtimeId: selectedShowtime.id,
+        selectedSeatIds: selectedSeats,
+      },
+      {
+        // Optional callbacks specific to this invocation
+        onSuccess: (data) => {
+          // Additional success logic specific to this component if needed
+          console.log("Booking confirmed in component:", data);
+          // Reset UI state (already handled in the hook's onSuccess, but can be done here too)
+          setSelectedShowtime(null);
+          setSelectedSeats([]);
+          setStep("showtime");
+          setTheatre(null);
         },
-      });
-
-      if (error) {
-        throw new Error("Something went wrong while booking seats");
+        onError: (error) => {
+          // Additional error handling specific to this component if needed
+          console.error("Booking failed in component:", error);
+        },
       }
-
-      toast.success("Tickets booked successfully!");
-      // In a real app, you would send booking data to a server
-      // Reset the form
-      setSelectedShowtime(null);
-      setSelectedSeats([]);
-      setStep("showtime");
-    } catch (err: any) {
-      toast.error(err.message);
-    }
+    );
   };
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -300,7 +293,8 @@ const MovieDetails = () => {
                       </div>
 
                       <SeatMap
-                        screenId={selectedShowtime.cinema_id} // Assuming cinema_id is also the screenId
+                        screenId={selectedShowtime.screen_number}
+                        showtimeId={selectedShowtime.id} // Pass showtimeId
                         selectedSeats={selectedSeats}
                         onSeatSelect={handleSeatSelect}
                       />

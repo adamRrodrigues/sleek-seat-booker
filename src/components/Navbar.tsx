@@ -12,7 +12,7 @@ const Navbar = () => {
         <Link to="/" className="flex items-center space-x-2">
           <Film size={24} className="text-cinema-primary" />
           <span className="text-xl font-semibold text-cinema-primary">
-            CineVerse
+            Cinema Hub
           </span>
         </Link>
 
