@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Clock, Calendar, Film, User } from "lucide-react";
 import { Showtime, Theatre } from "../types";
@@ -22,6 +22,27 @@ type Seat = {
   status: "available" | "occupied"; // Assuming 'available' or 'occupied' for now
 };
 
+const getYouTubeEmbedUrl = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  let videoId = null;
+  try {
+    const parsedUrl = new URL(url);
+    if (parsedUrl.hostname === "youtu.be") {
+      videoId = parsedUrl.pathname.substring(1);
+    } else if (parsedUrl.hostname.includes("youtube.com")) {
+      videoId = parsedUrl.searchParams.get("v");
+    }
+  } catch (e) {
+    console.error("Error parsing trailer URL:", e);
+    return null; // Invalid URL format
+  }
+
+  if (videoId) {
+    console.log(videoId);
+    return `https://www.youtube.com/embed/${videoId}?autoplay=0&modestbranding=1&rel=0`; // Added some common parameters
+  }
+  return null; // Not a recognizable YouTube URL
+};
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -44,6 +65,11 @@ const MovieDetails = () => {
   const [theatre, setTheatre] = useState<
     Database["public"]["Tables"]["theatre"]["Row"] | null
   >(null);
+
+  const trailerEmbedUrl = useMemo(
+    () => getYouTubeEmbedUrl(movie?.trailer),
+    [movie?.trailer]
+  );
 
   useEffect(() => {
     if (error) {
@@ -173,15 +199,13 @@ const MovieDetails = () => {
           <img
             src={movie.poster}
             alt={movie.title}
-            className="w-full h-full object-cover animate-fade-in animate-fill-both"
+            className="w-full h-full object-cover animate-fade-in animate-fill-both" // Keep poster styling
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = "/placeholder.svg";
             }}
           />
-
           <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-80"></div>
-
           <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 text-white">
             <div className="container mx-auto">
               <div className="max-w-3xl animate-slide-up animate-fill-both">
@@ -430,6 +454,22 @@ const MovieDetails = () => {
               )}
             </div>
           </div>
+          <h2 className="text-xl font-semibold mb-4">Trailer</h2>
+
+          {trailerEmbedUrl ? (
+            <iframe
+              src={trailerEmbedUrl}
+              title={`${movie.title} Trailer`}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="w-full h-[40em] self-center" // Ensure iframe fills the container
+            ></iframe>
+          ) : (
+            <p className="text-sm">
+              Sorry.This movie does not have a trailer yet
+            </p>
+          )}
         </div>
       </main>
 

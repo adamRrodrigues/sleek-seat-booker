@@ -17,13 +17,14 @@ import {
 import { cn } from "@/lib/utils"; // Assuming you have this utility
 
 import { Armchair } from "lucide-react"; // Or use Ticket icon again
+import { Badge } from "@/components/ui/badge"; // Assuming you use shadcn/ui or similar for badges
 
 // --- BookingCard Component ---
 const BookingCard = ({ booking }: { booking: UserBooking }) => {
   const movie = booking.showtimes?.movies;
   const showtime = booking.showtimes;
   const theatre = booking.showtimes?.theatre;
-  const seatReservations = booking.seat_reservations; // Get the seat reservations array
+  const seatReservations = booking.seat_reservations;
 
   const movieTitle = movie?.title ?? "Movie Title Unavailable";
   const moviePoster = movie?.poster ?? "/placeholder.svg";
@@ -35,33 +36,39 @@ const BookingCard = ({ booking }: { booking: UserBooking }) => {
     ? new Date(booking.booking_date)
     : null;
 
-  // Format seat details for display
+  // --- Check if the showtime has expired ---
+  const isExpired = showtimeDateTime ? showtimeDateTime < new Date() : false;
+  // ------------------------------------------
+
   const formattedSeats = useMemo(() => {
+    // ... (keep existing seat formatting logic) ...
     if (!seatReservations || seatReservations.length === 0) {
       return "Seat details unavailable";
     }
-    // Sort seats (e.g., A1, A2, B5)
     return seatReservations
       .map((res) =>
         res.seats ? `${res.seats.row_letter}${res.seats.seat_number}` : "?"
-      ) // Combine row and number, handle null seat
+      )
       .sort((a, b) => {
         const rowA = a.match(/[A-Z]+/)?.[0] || "";
         const rowB = b.match(/[A-Z]+/)?.[0] || "";
         const numA = parseInt(a.match(/\d+/)?.[0] || "0", 10);
         const numB = parseInt(b.match(/\d+/)?.[0] || "0", 10);
-
         if (rowA !== rowB) return rowA.localeCompare(rowB);
         return numA - numB;
       })
-      .join(", "); // Join with commas
+      .join(", ");
   }, [seatReservations]);
 
   return (
-    <div className="bg-cinema-card rounded-lg shadow-md overflow-hidden flex flex-col sm:flex-row gap-4 p-4 transition-shadow hover:shadow-lg">
-      {/* Movie Poster (Keep as is) */}
+    <div
+      className={cn(
+        "bg-cinema-card rounded-lg shadow-md overflow-hidden flex flex-col sm:flex-row gap-4 p-4 transition-shadow hover:shadow-lg",
+        isExpired ? "opacity-70" : "" // Optional: Dim expired bookings slightly
+      )}
+    >
+      {/* Movie Poster */}
       <div className="flex-shrink-0 w-full sm:w-24 md:w-32 aspect-[2/3] rounded overflow-hidden">
-        {/* ... img tag ... */}
         <img
           src={moviePoster}
           alt={`${movieTitle} poster`}
@@ -78,12 +85,28 @@ const BookingCard = ({ booking }: { booking: UserBooking }) => {
       {/* Booking Details */}
       <div className="flex-grow flex flex-col justify-between">
         <div>
-          <Link to={movie ? `/movie/${movie.id}` : "#"}>
-            <h3 className="text-lg font-semibold text-cinema-primary hover:text-cinema-accent transition-colors mb-1 line-clamp-2">
-              {movieTitle}
-            </h3>
-          </Link>
-          {/* Keep Theatre, Date/Time */}
+          <div className="flex items-center gap-2 mb-1">
+            {" "}
+            {/* Flex container for title and badge */}
+            <Link to={`/movies/${movie.id}`} className="flex-grow min-w-0">
+              {" "}
+              {/* Allow title to truncate */}
+              <h3 className="text-lg font-semibold text-cinema-primary hover:text-cinema-accent transition-colors line-clamp-2 truncate">
+                {movieTitle}
+              </h3>
+            </Link>
+            {/* --- Expired Badge --- */}
+            {isExpired && (
+              <Badge
+                variant="outline"
+                className="text-xs bg-gray-500 text-white border-gray-600 whitespace-nowrap"
+              >
+                Expired
+              </Badge>
+            )}
+            {/* --------------------- */}
+          </div>
+          {/* Theatre, Date/Time, Seats */}
           <div className="text-sm text-cinema-muted space-y-1.5">
             <p className="flex items-center">
               <MapPin size={14} className="mr-1.5 flex-shrink-0" />{" "}
@@ -107,20 +130,16 @@ const BookingCard = ({ booking }: { booking: UserBooking }) => {
                 })}
               </p>
             )}
-            {/* Add Seat Information Display */}
             <p className="flex items-center">
-              <Armchair size={14} className="mr-1.5 flex-shrink-0" />{" "}
-              {/* Seat Icon */}
+              <Armchair size={14} className="mr-1.5 flex-shrink-0" />
               {booking.number_of_tickets} Seat(s):{" "}
               <span className="ml-1 font-medium text-cinema-primary truncate">
                 {formattedSeats}
               </span>
             </p>
-            {/* Optionally keep the simple ticket count if preferred */}
-            {/* <p className="flex items-center"><Ticket size={14} className="mr-1.5 flex-shrink-0" /> {booking.number_of_tickets} Ticket(s)</p> */}
           </div>
         </div>
-        {/* Keep Footer (Booking Date, Total) */}
+        {/* Booking Footer */}
         <div className="text-xs text-cinema-muted mt-3 pt-2 border-t border-cinema-border">
           Booked on:{" "}
           {bookingDateTime

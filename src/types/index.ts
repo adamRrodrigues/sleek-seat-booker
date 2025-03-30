@@ -9,6 +9,7 @@ export interface Movie {
   cast: string[];
   description: string;
   status: "now-showing" | "upcoming";
+  trailer: string;
 }
 
 export interface Theatre {
