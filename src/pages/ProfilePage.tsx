@@ -213,8 +213,8 @@ const ProfilePage = () => {
 
         {/* User Information Section */}
         <section className="mb-12 bg-cinema-card p-6 rounded-lg shadow">
-          <div className="flex flex-col sm:flex-row items-center justify-between">
-            <div>
+          <div className="flex flex-col sm:flex-row items-start justify-between">
+            <div className="gap-2 flex flex-col">
               <h2 className="text-xl font-semibold mb-2 flex items-center">
                 <User size={20} className="mr-2" /> User Information
               </h2>
@@ -224,15 +224,27 @@ const ProfilePage = () => {
                   {user.email}
                 </span>
               </p>
+              <p className="text-cinema-muted">
+                Full Name:{" "}
+                <span className="font-medium text-cinema-primary">
+                  {user.user_metadata?.full_name}
+                </span>
+              </p>
+              <p className="text-cinema-muted">
+                Username:{" "}
+                <span className="font-medium text-cinema-primary">
+                  {user.user_metadata?.username}
+                </span>
+              </p>
               {/* Display other user meta data if needed */}
               {/* <p className="text-cinema-muted">Member since: {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</p> */}
+              <button
+                onClick={handleSignOut}
+                className="mt-4 sm:mt-0 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium transition-colors flex items-center w-fit"
+              >
+                <LogOut size={16} className="mr-1.5" /> Sign Out
+              </button>
             </div>
-            <button
-              onClick={handleSignOut}
-              className="mt-4 sm:mt-0 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium transition-colors flex items-center"
-            >
-              <LogOut size={16} className="mr-1.5" /> Sign Out
-            </button>
           </div>
         </section>
 

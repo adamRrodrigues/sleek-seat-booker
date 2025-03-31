@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMovies } from "@/hooks/useMovies";
 import { Movie } from "@/types";
@@ -12,12 +12,16 @@ import MovieGrid from "@/components/MovieGrid";
 const MoviesPage = () => {
   // Fetch all movies initially, sorting will happen on the client
   const { data: movies, isLoading, error } = useMovies();
+  const [moviesSearch, setMoviesSearch] = useState("");
 
   // Memoize the sorted list to prevent re-sorting on every render
   const sortedMovies = useMemo(() => {
     if (!movies) return [];
-
-    return [...movies].sort((a, b) => {
+    return [
+      ...movies.filter((item) =>
+        item.title.toLowerCase().includes(moviesSearch)
+      ),
+    ].sort((a, b) => {
       // Prioritize 'now-showing'
       if (a.status === "now-showing" && b.status === "upcoming") return -1;
       if (a.status === "upcoming" && b.status === "now-showing") return 1;
@@ -25,13 +29,20 @@ const MoviesPage = () => {
       // If statuses are the same, sort alphabetically by title
       return a.title.localeCompare(b.title);
     });
-  }, [movies]); // Re-sort only when the movies data changes
+  }, [movies, moviesSearch]); // Re-sort only when the movies data changes
 
   return (
     <div className="flex flex-col min-h-screen bg-cinema-background text-cinema-primary">
       <Navbar />
 
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
+        <div className="px-6">
+          <input
+            placeholder="Search Movies"
+            onChange={(e) => setMoviesSearch(e.target.value)}
+            className="w-full h-[2em] px-2 border-2 border-cinema-muted  rounded-md"
+          />
+        </div>
         {isLoading && (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin h-10 w-10 border-4 border-cinema-accent border-t-transparent rounded-full"></div>

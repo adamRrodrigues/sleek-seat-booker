@@ -12,6 +12,7 @@ import { useMovie } from "@/hooks/useMovies";
 import { Database } from "../integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useBookTickets } from "@/hooks/useBookTickets";
+import GooglePayButton from "@google-pay/button-react";
 
 // Define the type for Seat from the SeatMap component
 
@@ -38,7 +39,6 @@ const getYouTubeEmbedUrl = (url: string | null | undefined): string | null => {
   }
 
   if (videoId) {
-    console.log(videoId);
     return `https://www.youtube.com/embed/${videoId}?autoplay=0&modestbranding=1&rel=0`; // Added some common parameters
   }
   return null; // Not a recognizable YouTube URL
@@ -161,6 +161,7 @@ const MovieDetails = () => {
         },
       }
     );
+    navigate("/profile")
   };
   if (isLoading) {
     return (
@@ -328,9 +329,6 @@ const MovieDetails = () => {
                           <p className="font-medium">
                             Selected Seats: {selectedSeats.length}
                           </p>
-                          <p className="text-sm text-cinema-muted">
-                            {selectedSeats.join(", ")}
-                          </p>
                         </div>
 
                         <button
@@ -425,7 +423,50 @@ const MovieDetails = () => {
                         >
                           Go Back
                         </button>
-
+                        <GooglePayButton
+                          environment="TEST"
+                          buttonSizeMode="fill"
+                          paymentRequest={{
+                            apiVersion: 2,
+                            apiVersionMinor: 0,
+                            allowedPaymentMethods: [
+                              {
+                                type: "CARD",
+                                parameters: {
+                                  allowedAuthMethods: [
+                                    "PAN_ONLY",
+                                    "CRYPTOGRAM_3DS",
+                                  ],
+                                  allowedCardNetworks: ["MASTERCARD", "VISA"],
+                                },
+                                tokenizationSpecification: {
+                                  type: "PAYMENT_GATEWAY",
+                                  parameters: {
+                                    gateway: "example",
+                                    gatewayMerchantId:
+                                      "exampleGatewayMerchantId",
+                                  },
+                                },
+                              },
+                            ],
+                            merchantInfo: {
+                              merchantId: "BCR2DN4T27N7TWJ4",
+                              merchantName: "Demo Only",
+                            },
+                            transactionInfo: {
+                              totalPriceStatus: "FINAL",
+                              totalPriceLabel: "Total",
+                              totalPrice: "0",
+                              // totalPrice: 0,
+                              currencyCode: "INR",
+                              countryCode: "IN",
+                            },
+                          }}
+                          onLoadPaymentData={(paymentRequest) => {
+                            console.log("load payment data", paymentRequest);
+                            handleConfirmBooking
+                          }}
+                        />
                         <button
                           onClick={handleConfirmBooking}
                           className="px-6 py-3 bg-cinema-accent text-cinema-primary rounded-md font-medium hover:bg-cinema-accent/90 transition-colors"
@@ -454,21 +495,26 @@ const MovieDetails = () => {
               )}
             </div>
           </div>
-          <h2 className="text-xl font-semibold mb-4">Trailer</h2>
-
-          {trailerEmbedUrl ? (
-            <iframe
-              src={trailerEmbedUrl}
-              title={`${movie.title} Trailer`}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              className="w-full h-[40em] self-center" // Ensure iframe fills the container
-            ></iframe>
-          ) : (
-            <p className="text-sm">
-              Sorry.This movie does not have a trailer yet
-            </p>
+          {step == "showtime" && (
+            <>
+              <h2 className="text-xl font-semibold mb-4 mt-6 lg:mt-0">
+                Trailer
+              </h2>
+              {trailerEmbedUrl ? (
+                <iframe
+                  src={trailerEmbedUrl}
+                  title={`${movie.title} Trailer`}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="w-full h-[20em] md:h-[30em] lg:h-[40em]" // Ensure iframe fills the container
+                ></iframe>
+              ) : (
+                <p className="text-sm">
+                  Sorry.This movie does not have a trailer yet
+                </p>
+              )}
+            </>
           )}
         </div>
       </main>

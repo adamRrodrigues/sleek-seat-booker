@@ -85,31 +85,14 @@ const Navbar = () => {
             >
               Movies
             </Link>
-            <Link
-              to="/theatres"
-              className="text-cinema-primary hover:text-cinema-accent transition-colors py-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Theatres
-            </Link>
 
             {user ? (
-              <>
+              <Link to={"/profile"}>
                 <div className="text-cinema-primary py-2 flex items-center">
                   <User size={16} className="mr-2" />
                   {user.email?.split("@")[0]}
                 </div>
-                <button
-                  onClick={() => {
-                    signOut();
-                    setIsMenuOpen(false);
-                  }}
-                  className="flex items-center text-cinema-primary hover:text-cinema-accent transition-colors py-2"
-                >
-                  <LogOut size={16} className="mr-2" />
-                  Sign Out
-                </button>
-              </>
+              </Link>
             ) : (
               <Link
                 to="/auth"
