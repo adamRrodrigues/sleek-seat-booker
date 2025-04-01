@@ -161,7 +161,7 @@ const MovieDetails = () => {
         },
       }
     );
-    navigate("/profile")
+    navigate("/profile");
   };
   if (isLoading) {
     return (
@@ -410,7 +410,7 @@ const MovieDetails = () => {
                           <div className="flex justify-between pt-4 border-t border-cinema-muted/10">
                             <span className="font-semibold">Total Amount</span>
                             <span className="font-semibold">
-                              ${(selectedSeats.length * 12).toFixed(2)}
+                              ₹{(selectedSeats.length * 12).toFixed(2)}
                             </span>
                           </div>
                         </div>
@@ -464,7 +464,7 @@ const MovieDetails = () => {
                           }}
                           onLoadPaymentData={(paymentRequest) => {
                             console.log("load payment data", paymentRequest);
-                            handleConfirmBooking
+                            handleConfirmBooking;
                           }}
                         />
                         <button
