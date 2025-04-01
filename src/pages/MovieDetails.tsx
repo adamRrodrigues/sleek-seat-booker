@@ -467,7 +467,7 @@ const MovieDetails = () => {
                           }}
                           onLoadPaymentData={(paymentRequest) => {
                             console.log("load payment data", paymentRequest);
-                            handleConfirmBooking;
+                            handleConfirmBooking();
                           }}
                         />
                         <button

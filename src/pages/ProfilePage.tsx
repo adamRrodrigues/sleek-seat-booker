@@ -150,7 +150,7 @@ const BookingCard = ({ booking }: { booking: UserBooking }) => {
               })
             : "N/A"}
           <span className="float-right font-medium text-cinema-primary">
-            Total: ${booking.total_amount?.toFixed(2) ?? "N/A"}
+            Total: ₹{booking.total_amount?.toFixed(2) ?? "N/A"}
           </span>
         </div>
       </div>
