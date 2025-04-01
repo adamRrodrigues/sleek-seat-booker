@@ -48,6 +48,8 @@ const MovieDetails = () => {
   const navigate = useNavigate();
   const { user, session } = useAuth();
 
+  const [formattedSeats, setFormattedSeats] = useState("");
+
   const {
     mutate: bookTickets,
     isError: bookingIsError,
@@ -120,12 +122,37 @@ const MovieDetails = () => {
   };
 
   const handleBooking = () => {
+    formatSeats();
     if (selectedSeats.length === 0) {
       toast.error("Please select at least one seat");
       return;
     }
 
     setStep("summary");
+  };
+
+  const formatSeats = async () => {
+    const { data: seatsData, error: seatsError } = await supabase
+      .from("seats")
+      .select("*")
+      .eq("screen_id", selectedShowtime.screen_number);
+    if (!seatsData || seatsData.length === 0) {
+      return "Seat details unavailable";
+    }
+    setFormattedSeats(
+      seatsData
+        .filter((item) => selectedSeats.includes(item.id.toString()))
+        .map((res) => (res ? `${res.row_letter}${res.seat_number}` : "?"))
+        .sort((a, b) => {
+          const rowA = a.match(/[A-Z]+/)?.[0] || "";
+          const rowB = b.match(/[A-Z]+/)?.[0] || "";
+          const numA = parseInt(a.match(/\d+/)?.[0] || "0", 10);
+          const numB = parseInt(b.match(/\d+/)?.[0] || "0", 10);
+          if (rowA !== rowB) return rowA.localeCompare(rowB);
+          return numA - numB;
+        })
+        .join(", ")
+    );
   };
 
   const handleConfirmBooking = () => {
@@ -402,9 +429,7 @@ const MovieDetails = () => {
 
                           <div className="flex justify-between">
                             <span className="text-cinema-muted">Seats</span>
-                            <span className="font-medium">
-                              {selectedSeats.join(", ")}
-                            </span>
+                            <span className="font-medium">{formattedSeats}</span>
                           </div>
 
                           <div className="flex justify-between pt-4 border-t border-cinema-muted/10">
@@ -467,7 +492,7 @@ const MovieDetails = () => {
                           }}
                           onLoadPaymentData={(paymentRequest) => {
                             console.log("load payment data", paymentRequest);
-                            handleConfirmBooking();
+                            handleConfirmBooking;
                           }}
                         />
                         <button
